@@ -1,0 +1,2 @@
+# SpaceItemDecoration
+RecyclerView内部Items等分间距装饰类
