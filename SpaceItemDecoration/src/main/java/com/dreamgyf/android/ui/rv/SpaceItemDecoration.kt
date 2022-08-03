@@ -57,11 +57,13 @@ class SpaceItemDecoration : RecyclerView.ItemDecoration {
             parent: RecyclerView
     ) {
         val position = parent.getChildAdapterPosition(view)
+        val spanCount = layoutManager.spanCount
         val lp = (view.layoutParams as? StaggeredGridLayoutManager.LayoutParams?) ?: return
         val spanIndex = lp.spanIndex
-        val spanCount = layoutManager.spanCount
+        val spanSize = if (lp.isFullSpan) spanCount else 1
+        val isFirstRow = isFirstRow(layoutManager, position)
 
-        handleGridSpace(outRect, layoutManager, position, spanIndex, spanCount)
+        handleGridSpace(outRect, layoutManager, position, spanIndex, spanSize, spanCount, isFirstRow)
     }
 
     private fun handleGridLayout(
@@ -72,14 +74,16 @@ class SpaceItemDecoration : RecyclerView.ItemDecoration {
     ) {
         val position = parent.getChildAdapterPosition(view)
         val spanCount = layoutManager.spanCount
-        val spanIndex = position % spanCount
+        val spanIndex = layoutManager.spanSizeLookup.getSpanIndex(position, spanCount)
+        val spanSize = layoutManager.spanSizeLookup.getSpanSize(position)
+        val isFirstRow = isFirstRow(layoutManager, position)
 
-        handleGridSpace(outRect, layoutManager, position, spanIndex, spanCount)
+        handleGridSpace(outRect, layoutManager, position, spanIndex, spanSize, spanCount, isFirstRow)
     }
 
     private fun handleGridSpace(outRect: Rect, layoutManager: RecyclerView.LayoutManager,
-                                position: Int, spanIndex: Int, spanCount: Int) {
-        if (position >= spanCount) {
+                                position: Int, spanIndex: Int, spanSize: Int, spanCount: Int, isFirstRow: Boolean) {
+        if (!isFirstRow) {
             if (layoutManager.canScrollVertically()) {
                 outRect.top = verticalSpace
             } else if (layoutManager.canScrollHorizontally()) {
@@ -90,21 +94,19 @@ class SpaceItemDecoration : RecyclerView.ItemDecoration {
         /**
          * 这里需要两个式子成立，才能保证间隔相同的情况下，每个Item的宽度也一样：
          * 1、每个Item的outRect.left + outRect.right得出的结果均相等
-         * 2、任何一个Item的 outRect.right 加上下一个Item的 outRect.left 的值都相同
+         * 2、任何一个Item的 outRect.right 加上下一个Item的 outRect.left 的值都相同（等于space）
          *
          * 这里，将间距平均划分成列数相应的等分，同时计算出每个Item的左右可用空间（outRect.left + outRect.right）
          * 根据如下代码的规律将左右空间均匀分配给每个Item，使其满足上述两个式子
          */
         if (layoutManager.canScrollVertically()) {
             val unitSpace = horizontalSpace / spanCount
-            val totalOutSpace = (horizontalSpace / spanCount) * (spanCount - 1)
             outRect.left = spanIndex * unitSpace
-            outRect.right = totalOutSpace - outRect.left
+            outRect.right = horizontalSpace - (spanIndex + spanSize) * unitSpace
         } else if (layoutManager.canScrollHorizontally()) {
             val unitSpace = verticalSpace / spanCount
-            val totalOutSpace = (verticalSpace / spanCount) * (spanCount - 1)
             outRect.top = spanIndex * unitSpace
-            outRect.bottom = totalOutSpace - outRect.top
+            outRect.bottom = verticalSpace - (spanIndex + spanSize) * unitSpace
         }
     }
 
@@ -121,5 +123,40 @@ class SpaceItemDecoration : RecyclerView.ItemDecoration {
                 outRect.left = horizontalSpace
             }
         }
+    }
+
+    private fun isFirstRow(layoutManager: StaggeredGridLayoutManager, position: Int): Boolean {
+        val spanCount = layoutManager.spanCount
+
+        if (position == 0) {
+            return true
+        }
+        if (position >= spanCount) {
+            return false
+        }
+
+        for (i in 1..position) {
+            val view = layoutManager.getChildAt(i)
+            val lp = view?.layoutParams as? StaggeredGridLayoutManager.LayoutParams?
+            if (lp?.isFullSpan == true) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun isFirstRow(layoutManager: GridLayoutManager, position: Int): Boolean {
+        val spanCount = layoutManager.spanCount
+
+        if (position == 0) {
+            return true
+        }
+        if (position >= spanCount) {
+            return false
+        }
+
+        val spanIndex = layoutManager.spanSizeLookup.getSpanIndex(position, spanCount)
+        return spanIndex == position
     }
 }
