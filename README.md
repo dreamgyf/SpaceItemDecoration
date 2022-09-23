@@ -2,6 +2,8 @@
 
 RecyclerView内部Items等分间距装饰类
 
+**注：编译此项目请直接 clone 父工程 [AndroidLibraries](https://github.com/dreamgyf/AndroidLibraries)**
+
 支持：
 
 > LinearLayoutManager
