@@ -12,7 +12,7 @@ if (file.exists()) {
         moduleName 'SpaceItemDecoration'
         version '1.0'
         description 'RecyclerView内部Items等分间距装饰类'
-        url 'https://github.com/dreamgyf/AndroidLibraries/tree/master/SpaceItemDecoration'
+        url 'https://github.com/dreamgyf/SpaceItemDecoration'
     }
 }
 
