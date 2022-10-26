@@ -3,16 +3,18 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
-def file = new File("${rootDir.parent}/maven_publish.gradle")
+def file = new File("${rootDir.parent}/module_publish.gradle")
 if (file.exists()) {
     apply from: file.absolutePath
 
     publishModule {
-        groupId 'com.dreamgyf.android.ui'
-        moduleName 'SpaceItemDecoration'
-        version '1.0'
-        description 'RecyclerView内部Items等分间距装饰类'
-        url 'https://github.com/dreamgyf/SpaceItemDecoration'
+        library {
+            groupId = 'com.dreamgyf.android.ui'
+            moduleName = 'SpaceItemDecoration'
+            version = '1.0'
+            description = 'RecyclerView内部Items等分间距装饰类'
+            url = 'https://github.com/dreamgyf/SpaceItemDecoration'
+        }
     }
 }
 
